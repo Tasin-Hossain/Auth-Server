@@ -2,8 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
 const helmet  = require('helmet');
-const cookieParser = require('cookie-parser');
-const compression  = require('compression');
+const cookieParser  = require('cookie-parser');
+const compression   = require('compression');
 const mongoSanitize = require('express-mongo-sanitize');
 const hpp = require('hpp');
 const connectDB = require('./src/config/database');
@@ -18,32 +18,34 @@ const deviceRoutes    = require('./src/routes/deviceRoutes');
 const sessionRoutes   = require('./src/routes/sessionRoutes');
 
 const app = express();
+
+// ★ Railway reverse proxy এর পেছনে থাকে — এটা না দিলে rate-limit crash করে
+app.set('trust proxy', 1);
+
 connectDB();
 
 // Helmet
 app.use(helmet({ crossOriginEmbedderPolicy: false, contentSecurityPolicy: false }));
 
-// ── CORS ──────────────────────────────────────────────────────────────────────
-// origin: "*" + credentials: true = browser block করে — এটা কখনো করবে না
-// সঠিক পদ্ধতি: specific origin allow করো
+// CORS
 const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
   .split(',')
   .map((o) => o.trim());
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // Postman / server-to-server
+    if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
     logger.warn(`CORS blocked: ${origin} | allowed: ${allowedOrigins.join(', ')}`);
     callback(new Error('CORS not allowed'));
   },
-  credentials: true,  // cookie পাঠাতে হলে true লাগবে — কিন্তু তখন * দেওয়া যাবে না
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-ID', 'x-device-id'],
   optionsSuccessStatus: 200,
 };
 
-app.options('*', cors(corsOptions)); // preflight OPTIONS সব route এ handle করো
+app.options('*', cors(corsOptions));
 app.use(cors(corsOptions));
 
 // Body parsers
@@ -59,7 +61,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check — deploy হয়েছে কিনা verify করতে
+// Health check
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
@@ -71,10 +73,10 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
-app.use('/api/v1/auth',    authRoutes);
-app.use('/api/v1/users',   userRoutes);
-app.use('/api/v1/2fa',     twoFactorRoutes);
-app.use('/api/v1/devices', deviceRoutes);
+app.use('/api/v1/auth',     authRoutes);
+app.use('/api/v1/users',    userRoutes);
+app.use('/api/v1/2fa',      twoFactorRoutes);
+app.use('/api/v1/devices',  deviceRoutes);
 app.use('/api/v1/sessions', sessionRoutes);
 
 app.use(notFound);
