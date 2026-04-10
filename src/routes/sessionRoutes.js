@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const deviceController = require('../controllers/deviceController');
+const c = require('../controllers/deviceController');
 const { protect } = require('../middleware/authMiddleware');
 
 router.use(protect);
-router.get('/', deviceController.getSessions);
-router.get('/history', deviceController.getLoginHistory);
-router.delete('/:sessionId', deviceController.revokeSession);
+router.get('/',           c.getSessions);
+router.get('/history',    c.getLoginHistory);
+router.delete('/:sessionId', c.revokeSession);
 
 module.exports = router;

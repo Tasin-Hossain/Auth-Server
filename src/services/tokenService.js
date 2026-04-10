@@ -51,15 +51,16 @@ class TokenService {
     }
   }
 
-  // ── Cookie helpers ──────────────────────────────────────────────────────────
+  // ── Cookie helpers 
   _cookieOptions() {
     const isProd = process.env.NODE_ENV === 'production';
     return {
-      httpOnly: true,          // JS দিয়ে read করা যাবে না (XSS protection)
-      secure:   isProd,        // production এ HTTPS only
-      sameSite: isProd ? 'strict' : 'lax',  // dev এ lax — proxy এর জন্য
-      path:     '/',           // সব route এ cookie যাবে
-      // domain explicitly set করা হচ্ছে না → browser নিজে handle করবে
+      httpOnly: true,
+      secure: false,          // production এ HTTPS (railway uses HTTPS)
+      // production এ vercel + railway = cross-site → 'none' লাগবে
+      // none হলে secure: true অবশ্যই লাগবে
+      sameSite: isProd ? 'none' : 'lax',
+      path:     '/',
     };
   }
 

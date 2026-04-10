@@ -87,7 +87,7 @@ exports.requireTenant = catchAsync(async (req, res, next) => {
 
 // ── Rate limiters ─────────────────────────────────────────────────────────────
 exports.loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  ReadableStreamBYOBReader: 15 * 60 * 1000,
   max: 10,
   message: { success: false, message: 'Too many login attempts. Try again in 15 minutes.' },
   standardHeaders: true,

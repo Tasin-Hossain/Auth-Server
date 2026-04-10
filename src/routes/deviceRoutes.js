@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const deviceController = require('../controllers/deviceController');
+const c = require('../controllers/deviceController');
 const { protect } = require('../middleware/authMiddleware');
 
 router.use(protect);
-router.get('/', deviceController.getDevices);
-router.patch('/:deviceId/trust', deviceController.trustDevice);
-router.patch('/:deviceId/rename', deviceController.renameDevice);
-router.delete('/:deviceId', deviceController.removeDevice);
+router.get('/',                       c.getDevices);
+router.patch('/:deviceId/trust',      c.trustDevice);
+router.patch('/:deviceId/untrust',    c.untrustDevice);
+router.patch('/:deviceId/rename',     c.renameDevice);
+router.delete('/:deviceId',           c.removeDevice);
 
 module.exports = router;
