@@ -1,16 +1,14 @@
-const nodemailer = require('nodemailer');
-const logger = require('../config/logger');
+const nodemailer = require("nodemailer");
+const logger = require("../config/logger");
 
 class EmailService {
   constructor() {
     this.transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
-      secure: process.env.EMAIL_PORT == 465,
+      service: "gmail",
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
+        pass: process.env.EMAIL_PASS,
+      },
     });
   }
 
@@ -21,25 +19,25 @@ class EmailService {
         to,
         subject,
         html,
-        text: text || html.replace(/<[^>]*>/g, '')
+        text: text || html.replace(/<[^>]*>/g, ""),
       };
 
       const info = await this.transporter.sendMail(mailOptions);
       logger.info(`Email sent to ${to}: ${info.messageId}`);
       return info;
     } catch (error) {
-      logger.error('Email send error:', error);
-      throw new Error('Email could not be sent');
+      logger.error("Email send error:", error);
+      throw new Error("Email could not be sent");
     }
   }
 
   // Email Verification
   async sendVerificationEmail(user, token) {
     const verifyUrl = `${process.env.CLIENT_URL}/verify-email/${token}`;
-    
+
     await this.sendEmail({
       to: user.email,
-      subject: '✅ Verify Your Email Address',
+      subject: "✅ Verify Your Email Address",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0f0f0f; color: #fff; padding: 40px; border-radius: 12px;">
           <div style="text-align: center; margin-bottom: 32px;">
@@ -53,17 +51,17 @@ class EmailService {
           <p style="color: #52525b; font-size: 12px;">If you didn't create an account, please ignore this email.</p>
           <p style="color: #52525b; font-size: 12px; word-break: break-all;">Or copy this link: ${verifyUrl}</p>
         </div>
-      `
+      `,
     });
   }
 
   // Password Reset
   async sendPasswordResetEmail(user, token) {
     const resetUrl = `${process.env.CLIENT_URL}/reset-password/${token}`;
-    
+
     await this.sendEmail({
       to: user.email,
-      subject: '🔑 Password Reset Request',
+      subject: "🔑 Password Reset Request",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0f0f0f; color: #fff; padding: 40px; border-radius: 12px;">
           <div style="text-align: center; margin-bottom: 32px;">
@@ -77,7 +75,7 @@ class EmailService {
           <p style="color: #52525b; font-size: 12px;">If you didn't request this, please ignore this email and your password will remain unchanged.</p>
           <p style="color: #52525b; font-size: 12px; word-break: break-all;">Or copy: ${resetUrl}</p>
         </div>
-      `
+      `,
     });
   }
 
@@ -85,7 +83,7 @@ class EmailService {
   async send2FACode(user, otp) {
     await this.sendEmail({
       to: user.email,
-      subject: '🔒 Your 2FA Verification Code',
+      subject: "🔒 Your 2FA Verification Code",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0f0f0f; color: #fff; padding: 40px; border-radius: 12px;">
           <h1 style="color: #6366f1;">🔐 AuthSystem</h1>
@@ -97,7 +95,7 @@ class EmailService {
           <p style="color: #a1a1aa;">This code expires in <strong style="color: #fff;">5 minutes</strong>.</p>
           <p style="color: #ef4444; font-size: 12px;">⚠️ Never share this code with anyone.</p>
         </div>
-      `
+      `,
     });
   }
 
@@ -105,7 +103,7 @@ class EmailService {
   async sendSuspiciousActivityAlert(user, activity) {
     await this.sendEmail({
       to: user.email,
-      subject: '⚠️ Suspicious Activity Detected',
+      subject: "⚠️ Suspicious Activity Detected",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0f0f0f; color: #fff; padding: 40px; border-radius: 12px;">
           <h1 style="color: #ef4444;">⚠️ Security Alert</h1>
@@ -114,7 +112,7 @@ class EmailService {
           <div style="background: #18181b; border-left: 4px solid #ef4444; padding: 16px; margin: 16px 0;">
             <p style="color: #fca5a5; margin: 0;"><strong>Activity:</strong> ${activity.type}</p>
             <p style="color: #a1a1aa; margin: 4px 0;"><strong>IP Address:</strong> ${activity.ip}</p>
-            <p style="color: #a1a1aa; margin: 4px 0;"><strong>Location:</strong> ${activity.location || 'Unknown'}</p>
+            <p style="color: #a1a1aa; margin: 4px 0;"><strong>Location:</strong> ${activity.location || "Unknown"}</p>
             <p style="color: #a1a1aa; margin: 4px 0;"><strong>Time:</strong> ${new Date().toLocaleString()}</p>
           </div>
           <p style="color: #a1a1aa;">If this was you, you can ignore this email. If not, please secure your account immediately.</p>
@@ -122,7 +120,7 @@ class EmailService {
             <a href="${process.env.CLIENT_URL}/dashboard/security" style="background: #ef4444; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">Secure My Account</a>
           </div>
         </div>
-      `
+      `,
     });
   }
 
@@ -130,7 +128,7 @@ class EmailService {
   async sendNewDeviceAlert(user, device) {
     await this.sendEmail({
       to: user.email,
-      subject: '🔔 New Device Login',
+      subject: "🔔 New Device Login",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0f0f0f; color: #fff; padding: 40px; border-radius: 12px;">
           <h1 style="color: #6366f1;">🔐 AuthSystem</h1>
@@ -138,12 +136,12 @@ class EmailService {
           <p style="color: #a1a1aa;">Hi ${user.firstName}, a new device just signed in to your account:</p>
           <div style="background: #18181b; border-radius: 8px; padding: 16px; margin: 16px 0;">
             <p style="color: #d4d4d8; margin: 4px 0;">📱 <strong>Device:</strong> ${device.browser} on ${device.os}</p>
-            <p style="color: #d4d4d8; margin: 4px 0;">🌍 <strong>Location:</strong> ${device.location || 'Unknown'}</p>
+            <p style="color: #d4d4d8; margin: 4px 0;">🌍 <strong>Location:</strong> ${device.location || "Unknown"}</p>
             <p style="color: #d4d4d8; margin: 4px 0;">🕐 <strong>Time:</strong> ${new Date().toLocaleString()}</p>
           </div>
           <p style="color: #a1a1aa;">Not you? <a href="${process.env.CLIENT_URL}/dashboard/security" style="color: #6366f1;">Secure your account</a> immediately.</p>
         </div>
-      `
+      `,
     });
   }
 }
