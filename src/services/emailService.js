@@ -1,37 +1,44 @@
 const nodemailer = require("nodemailer");
 const logger = require("../config/logger");
+const { Resend } = require('resend');
 
 class EmailService {
   constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    // this.transporter = nodemailer.createTransport({
+    //   host: "smtp.gmail.com",
+    //   port: 465,
+    //   secure: true,
+    //   auth: {
+    //     user: process.env.EMAIL_USER,
+    //     pass: process.env.EMAIL_PASS,
+    //   },
+    // });
+
+    this.resend = new Resend(process.env.RESEND_API_KEY);
   }
 
-  async sendEmail({ to, subject, html, text }) {
+  async sendEmail({ to, subject, html }) {
     try {
-      const mailOptions = {
-        from: process.env.EMAIL_FROM,
+      const { data, error } = await this.resend.emails.send({
+        from: process.env.EMAIL_FROM, // e.g. "Auth <no-reply@yourdomain.com>"
         to,
         subject,
-        html,
-        text: text || html.replace(/<[^>]*>/g, ""),
-      };
+        html
+      });
 
-      const info = await this.transporter.sendMail(mailOptions);
-      logger.info(`Email sent to ${to}: ${info.messageId}`);
-      return info;
+      if (error) {
+        logger.error('Resend error:', error);
+        throw new Error('Email could not be sent');
+      }
+
+      logger.info(`Email sent to ${to}: ${data.id}`);
+      return data;
     } catch (error) {
-      logger.error("Email send error:", error);
-      throw new Error("Email could not be sent");
+      logger.error('Email send error:', error);
+      throw error;
     }
   }
+
 
   // Email Verification
   async sendVerificationEmail(user, token) {
